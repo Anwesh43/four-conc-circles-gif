@@ -75,7 +75,7 @@ class State {
             this.scale = this.prevScale + this.dir
             this.dir = 0
             this.prevScale = this.scale
-            cb(this.prevScale)
+            cb()
         }
     }
 
@@ -84,5 +84,47 @@ class State {
             this.dir = 1 - 2 * this.prevScale
             cb()
         }
+    }
+}
+
+class FCCNode {
+    constructor(i) {
+        this.i = i
+        this.state = new State()
+
+    }
+
+    addNeighbor() {
+        if (this.i < nodes - 1) {
+            this.next = new FCCNode(this.i + 1)
+            this.next.prev = this
+        }
+    }
+
+    draw(context) {
+        drawFCCNode(context, this.i, this.state.scale)
+        if (this.next) {
+            this.next.draw(context)
+        }
+    }
+
+    update(cb) {
+        this.state.update(cb)
+    }
+
+    startUpdating(cb) {
+        this.state.startUpdating(cb)
+    }
+
+    getNext(dir, cb) {
+        var curr = this.prev
+        if (this.dir == 1) {
+            curr = this.next
+        }
+        if (curr) {
+            return curr
+        }
+        cb()
+        return this 
     }
 }
