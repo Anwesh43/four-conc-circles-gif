@@ -8,6 +8,10 @@ const scDiv = 0.51
 const sizeFactor = 3
 const strokeFactor = 90
 const strokeColor = "#0D47A1"
+const delay = 30
+const quality = 100
+const repeat = 0
+const backColor = "#BDBDBD"
 
 const maxScale = (scale, i, n) => {
     return Math.max(0, scale - i / n)
@@ -176,7 +180,7 @@ class Renderer {
     render(context, cb, endcb) {
         this.fcc.startUpdating()
         while(this.running) {
-            context.fillStyle = '#BDBDBD'
+            context.fillStyle = backColor
             context.fillRect(0, 0, w, h)
             this.fcc.draw(context)
             cb(context)
@@ -198,9 +202,9 @@ class FourConcCircleGif {
 
     init(fn) {
         this.context = this.canvas.getContext('2d')
-        this.encoder.setRepeat(0)
-        this.encoder.setDelay(50)
-        this.encoder.setQuality(100)
+        this.encoder.setRepeat(repeat)
+        this.encoder.setDelay(delay)
+        this.encoder.setQuality(quality)
         this.encoder.createReadStream().pipe(require('fs').createWriteStream(fn))
     }
 
