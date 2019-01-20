@@ -79,10 +79,9 @@ class State {
         }
     }
 
-    startUpdating(cb) {
+    startUpdating() {
         if (this.dir == 0) {
             this.dir = 1 - 2 * this.prevScale
-            cb()
         }
     }
 }
@@ -112,8 +111,8 @@ class FCCNode {
         this.state.update(cb)
     }
 
-    startUpdating(cb) {
-        this.state.startUpdating(cb)
+    startUpdating() {
+        this.state.startUpdating()
     }
 
     getNext(dir, cb) {
@@ -147,12 +146,36 @@ class FourConcCircle {
             this.curr = this.curr.getNext(this.dir, () => {
                 this.dir *= -1
             })
-            cb()
+            if (this.curr.i == 0 && this.dir == 1) {
+                cb()
+            } else {
+                this.curr.startUpdating()
+            }
         })
     }
 
-    startUpdating(cb) {
-        this.curr.startUpdating(cb)
+    startUpdating() {
+        this.curr.startUpdating()
+    }
+}
+
+class Renderer {
+    constructor() {
+        this.running = true
+        this.fcc = new FourConcCircle()
     }
 
+    render(context, cb, endcb) {
+        this.fcc.startUpdating()
+        while(this.running) {
+            context.fillStyle = '#BDBDBD'
+            context.fillRect(0, 0, w, h)
+            this.fcc.draw(context)
+            cb(context)
+            this.fcc.update(() => {
+                this.running = false
+                endcb()
+            })
+        }
+    }
 }
