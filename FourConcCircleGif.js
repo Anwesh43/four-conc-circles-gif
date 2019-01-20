@@ -1,4 +1,4 @@
-const gifencoder = require('gifencoder')
+const GifEncoder = require('gifencoder')
 const Canvas = require('canvas').Canvas
 const w = 600, h = 600
 const nodes = 5
@@ -177,5 +177,36 @@ class Renderer {
                 endcb()
             })
         }
+    }
+}
+
+class FourConcCircleGif {
+    constructor(fn) {
+        this.encoder = new GifEncoder(w, h)
+        this.canvas = new Canvas(w, h)
+        this.renderer = new Renderer()
+        this.init(fn)
+    }
+
+    init(fn) {
+        this.context = this.canvas.getContext('2d')
+        this.encoder.setRepeat(0)
+        this.encoder.setDelay(50)
+        this.encoder.setQuality(100)
+        this.encoder.createReadStream().pipe(require('fs').createWriteStream(fn))
+    }
+
+    create() {
+        this.encoder.start()
+        this.renderer.render(this.context, (context) => {
+            this.encoder.addFrame(context)
+        }, () => {
+            this.encoder.end()
+        })
+    }
+
+    static init(fn) {
+        const gif = new FourConcCircleGif(fn)
+        gif.create()
     }
 }
