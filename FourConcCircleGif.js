@@ -210,3 +210,5 @@ class FourConcCircleGif {
         gif.create()
     }
 }
+
+module.exports = FourConcCircleGif.init
