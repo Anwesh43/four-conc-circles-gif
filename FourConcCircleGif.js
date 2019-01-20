@@ -28,9 +28,12 @@ const updateValue = (scale, dir, a, b) => {
     return mirrorValue(scale, a, b) * dir * scGap
 }
 
-const drawCircle = (context, sc, x, y, r) => {
+const drawCircle = (context, sc, x, y, r, offset) => {
+    const start = -90
+    const end = -90 + 360 * sc
     context.save()
     context.translate(x, y)
+    context.rotate(-offset)
     context.beginPath()
     for (var i = start; i<=end; i++) {
         const x = r * Math.cos(i * Math.PI/180), y = r * Math.sin(i * Math.PI/180)
@@ -44,22 +47,25 @@ const drawCircle = (context, sc, x, y, r) => {
     context.restore()
 }
 const drawFCCNode = (context, i, scale) => {
+    //console.log(`scale:${scale}, i : ${i}`)
     const gap = w / (nodes + 1)
-    const sc1 = divideScale(scale, circles, 1)
-    const sc2 = divideScale(scale, circles, 2)
+    const sc1 = divideScale(scale, 0, 2)
+    const sc2 = divideScale(scale, 1, 2)
+    const size = gap / sizeFactor
     context.strokeStyle = strokeColor
     context.lineCap = 'round'
     context.lineWidth = Math.min(w, h) / strokeFactor
-    save()
-    translate(gap * (i + 1), h/2)
-    drawCircle(context, 1, 0, 0, size/2)
+    context.save()
+    context.translate(gap * (i + 1), h/2)
+    context.rotate(Math.PI/2 * sc2)
+    drawCircle(context, 1, 0, 0, size/2, 0)
     for (var j = 0; j < circles; j++) {
         context.save()
         context.rotate(Math.PI/2 * j)
-        drawCircle(context, divideScale(sc1, j, circles), 3 * size/2, 0, size/2)
+        drawCircle(context, divideScale(sc1, j, circles), size, 0, size/2, Math.PI/2 * j)
         context.restore()
     }
-    restore()
+    context.restore()
 }
 
 class State {
@@ -70,7 +76,8 @@ class State {
     }
 
     update(cb) {
-        this.scale += updateValue(this.scale, this.dir, lines, 1)
+        this.scale += updateValue(this.scale, this.dir, circles, 1)
+        //console.log(this.scale)
         if (Math.abs(this.scale - this.prevScale) > 1) {
             this.scale = this.prevScale + this.dir
             this.dir = 0
@@ -90,7 +97,7 @@ class FCCNode {
     constructor(i) {
         this.i = i
         this.state = new State()
-
+        this.addNeighbor()
     }
 
     addNeighbor() {
@@ -117,7 +124,7 @@ class FCCNode {
 
     getNext(dir, cb) {
         var curr = this.prev
-        if (this.dir == 1) {
+        if (dir == 1) {
             curr = this.next
         }
         if (curr) {
@@ -146,6 +153,7 @@ class FourConcCircle {
             this.curr = this.curr.getNext(this.dir, () => {
                 this.dir *= -1
             })
+            console.log(`index:${this.curr.i}`)
             if (this.curr.i == 0 && this.dir == 1) {
                 cb()
             } else {
